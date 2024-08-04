@@ -1,6 +1,6 @@
-Hola mundo cruel
-
-<form>
+{{title}}
+<form method="POST" action = "/resp/">
+    {% csrf_token %}
     {{form.as_p}}
     <button>
         Send
