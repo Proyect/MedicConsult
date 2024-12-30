@@ -7,16 +7,38 @@ def home(request): #List of Consult
         'title': "Tratando de armar un formulario"
     })
     
-def update_consult(request):
+def put_consult(request):# post form
     return ""
 
-def insert_consult(request):
+def get_consult(request): # get consult
     return ""
 
-def get_consult(request):
+def del_consult(request):# post form
     return ""
 
 #------  Dr  -----------------------------
 
 def list_dr(request):
+    return ""
+
+def put_dr():    
+    return ""
+
+def get_dr():
+    return ""
+
+def del_dr():
+    return ""
+
+# ------ Person -------------------
+def list_person():
+    return ""
+
+def put_person():
+    return ""
+
+def get_person():
+    return ""
+
+def del_person():
     return ""

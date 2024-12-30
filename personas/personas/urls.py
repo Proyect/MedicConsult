@@ -1,5 +1,5 @@
 """
-URL configuration for crud project.
+URL configuration for personas project.
 
 The `urlpatterns` list routes URLs to views. For more information please see:
     https://docs.djangoproject.com/en/5.0/topics/http/urls/
@@ -16,22 +16,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from history import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path("", views.home),
-    path("/update_consult/", views.put_consult),
-    path("/detail_consult/", views.get_consult),
-    path("/delete_consult/", views.del_consult),
-    
-    path("/list_dr/", views.list_dr),
-    path("/update_dr/",views.put_dr),
-    path("/consult_dr/",views.get_consult),
-    path("/delete_dr/",views.del_dr),
-    
-    path("/list_person/", views.list_person),
-    path("/update_person/", views.put_person),
-    path("/consult_person/", views.get_person),
-    path("/delete_person/", views.del_person)
 ]

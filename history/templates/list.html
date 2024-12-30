@@ -1,7 +1,7 @@
 {{title}}
 <form method="POST" action = "/resp/">
     {% csrf_token %}
-    {{form.as_p}}
+    {{form.as_div}}
     <button>
         Send
     </button>
