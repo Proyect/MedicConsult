@@ -105,7 +105,7 @@ class Consult(models.Model):
     patient = models.ForeignKey(Person, on_delete=models.CASCADE, verbose_name="Paciente")
     doctor = models.ForeignKey(Doctor, on_delete=models.CASCADE, verbose_name="Doctor")
     date = models.DateTimeField(verbose_name="Fecha y Hora")
-    consult_type = models.CharField(max_length=10, choices=CONSULT_TYPE_CHOICES, verbose_name="Tipo de Consulta")
+    consult_type = models.CharField(max_length=10, choices=CONSULT_TYPE_CHOICES, default='FIRST', verbose_name="Tipo de Consulta")
     reason = models.TextField(verbose_name="Motivo de Consulta")
     symptoms = models.TextField(verbose_name="Síntomas")
     vital_signs = models.TextField(blank=True, null=True, verbose_name="Signos Vitales")

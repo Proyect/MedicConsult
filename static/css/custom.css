@@ -9,6 +9,10 @@
     --info-color: #0dcaf0;
     --light-color: #f8f9fa;
     --dark-color: #212529;
+    --medical-blue: #2c5aa0;
+    --medical-green: #28a745;
+    --medical-red: #dc3545;
+    --medical-orange: #fd7e14;
 }
 
 /* General Styles */
@@ -238,6 +242,87 @@ body.login-page {
     color: var(--warning-color);
 }
 
+/* Medical Theme Styles */
+.medical-card {
+    border-left: 4px solid var(--medical-blue);
+    transition: all 0.3s ease;
+}
+
+.medical-card:hover {
+    border-left-color: var(--medical-green);
+    transform: translateY(-2px);
+}
+
+.patient-avatar {
+    background: linear-gradient(135deg, var(--medical-blue), var(--medical-green));
+    color: white;
+    font-weight: bold;
+}
+
+.consult-badge {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+}
+
+.consult-badge.first {
+    background-color: var(--medical-blue);
+    color: white;
+}
+
+.consult-badge.follow {
+    background-color: var(--medical-green);
+    color: white;
+}
+
+.consult-badge.emergency {
+    background-color: var(--medical-red);
+    color: white;
+}
+
+.consult-badge.routine {
+    background-color: var(--medical-orange);
+    color: white;
+}
+
+/* Loading States */
+.loading-spinner {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(0,0,0,.1);
+    border-radius: 50%;
+    border-top-color: var(--primary-color);
+    animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Form Improvements */
+.form-floating > label {
+    color: var(--secondary-color);
+}
+
+.form-control:focus {
+    border-color: var(--medical-blue);
+    box-shadow: 0 0 0 0.2rem rgba(44, 90, 160, 0.25);
+}
+
+/* Table Improvements */
+.table-medical {
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+.table-medical thead th {
+    background-color: var(--medical-blue);
+    color: white;
+    border: none;
+    font-weight: 600;
+}
+
 /* Print Styles */
 @media print {
     .navbar,
@@ -249,5 +334,9 @@ body.login-page {
     .card {
         border: 1px solid #000 !important;
         box-shadow: none !important;
+    }
+    
+    .medical-card {
+        border-left: 2px solid #000 !important;
     }
 }
