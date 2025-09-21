@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    environment:
+      POSTGRES_DB: medic_db
+      POSTGRES_USER: medic_user
+      POSTGRES_PASSWORD: medic_password
+    ports:
+      - "5432:5432"
+
+  web:
+    build: .
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    environment:
+      - DEBUG=True
+      - USE_POSTGRES=True
+      - DB_NAME=medic_db
+      - DB_USER=medic_user
+      - DB_PASSWORD=medic_password
+      - DB_HOST=db
+      - DB_PORT=5432
+      - SECRET_KEY=django-insecure-xcs3#ae6j+&o&0!#85r_$$p)v=zhoc@s2^$c$ls-5c159&#$b!
+      - ALLOWED_HOSTS=localhost,127.0.0.1,0.0.0.0
+    depends_on:
+      - db
+
+volumes:
+  postgres_data:

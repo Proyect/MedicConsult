@@ -1,0 +1,207 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block title %}{{ title }} - System Medic{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="card-title mb-0">
+                    <i class="bi bi-person-plus"></i> {{ title }}
+                </h4>
+            </div>
+            <div class="card-body">
+                <form method="post" class="needs-validation" novalidate>
+                    {% csrf_token %}
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="{{ form.name.id_for_label }}" class="form-label">
+                                    <i class="bi bi-person"></i> Nombre *
+                                </label>
+                                {{ form.name }}
+                                <div class="invalid-feedback">
+                                    Por favor ingresa el nombre del paciente.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="{{ form.last_name.id_for_label }}" class="form-label">
+                                    <i class="bi bi-person"></i> Apellido *
+                                </label>
+                                {{ form.last_name }}
+                                <div class="invalid-feedback">
+                                    Por favor ingresa el apellido del paciente.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="{{ form.dni.id_for_label }}" class="form-label">
+                                    <i class="bi bi-card-text"></i> DNI *
+                                </label>
+                                {{ form.dni }}
+                                <div class="invalid-feedback">
+                                    Por favor ingresa un DNI válido (7-8 dígitos).
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="{{ form.birth_date.id_for_label }}" class="form-label">
+                                    <i class="bi bi-calendar"></i> Fecha de Nacimiento *
+                                </label>
+                                {{ form.birth_date }}
+                                <div class="invalid-feedback">
+                                    Por favor ingresa la fecha de nacimiento.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="{{ form.gender.id_for_label }}" class="form-label">
+                                    <i class="bi bi-gender-ambiguous"></i> Género *
+                                </label>
+                                {{ form.gender }}
+                                <div class="invalid-feedback">
+                                    Por favor selecciona el género.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="{{ form.phone.id_for_label }}" class="form-label">
+                                    <i class="bi bi-telephone"></i> Teléfono *
+                                </label>
+                                {{ form.phone }}
+                                <div class="invalid-feedback">
+                                    Por favor ingresa un teléfono válido.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="{{ form.email.id_for_label }}" class="form-label">
+                                    <i class="bi bi-envelope"></i> Email *
+                                </label>
+                                {{ form.email }}
+                                <div class="invalid-feedback">
+                                    Por favor ingresa un email válido.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.address.id_for_label }}" class="form-label">
+                            <i class="bi bi-geo-alt"></i> Dirección *
+                        </label>
+                        {{ form.address }}
+                        <div class="invalid-feedback">
+                            Por favor ingresa la dirección del paciente.
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.observations.id_for_label }}" class="form-label">
+                            <i class="bi bi-chat-text"></i> Observaciones
+                        </label>
+                        {{ form.observations }}
+                        <div class="form-text">
+                            Información adicional sobre el paciente (opcional).
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'patient_list' %}" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left"></i> Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-circle"></i> Guardar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Validación de formulario
+    const form = document.querySelector('.needs-validation');
+    form.addEventListener('submit', function(event) {
+        if (!form.checkValidity()) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
+        form.classList.add('was-validated');
+    });
+    
+    // Validación de DNI
+    const dniInput = document.querySelector('input[name="dni"]');
+    dniInput.addEventListener('input', function() {
+        const value = this.value.replace(/\D/g, '');
+        this.value = value;
+        
+        if (value.length > 0 && (value.length < 7 || value.length > 8)) {
+            this.setCustomValidity('El DNI debe tener entre 7 y 8 dígitos');
+        } else {
+            this.setCustomValidity('');
+        }
+    });
+    
+    // Validación de edad
+    const birthDateInput = document.querySelector('input[name="birth_date"]');
+    birthDateInput.addEventListener('change', function() {
+        const birthDate = new Date(this.value);
+        const today = new Date();
+        const age = today.getFullYear() - birthDate.getFullYear();
+        const monthDiff = today.getMonth() - birthDate.getMonth();
+        
+        let actualAge = age;
+        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+            actualAge--;
+        }
+        
+        if (actualAge < 0) {
+            this.setCustomValidity('La fecha de nacimiento no puede ser futura');
+        } else if (actualAge > 120) {
+            this.setCustomValidity('La edad no puede ser mayor a 120 años');
+        } else {
+            this.setCustomValidity('');
+        }
+    });
+    
+    // Formateo de teléfono
+    const phoneInput = document.querySelector('input[name="phone"]');
+    phoneInput.addEventListener('input', function() {
+        let value = this.value.replace(/\D/g, '');
+        if (value.length > 0) {
+            if (value.length <= 3) {
+                this.value = value;
+            } else if (value.length <= 6) {
+                this.value = value.slice(0, 3) + '-' + value.slice(3);
+            } else if (value.length <= 10) {
+                this.value = value.slice(0, 3) + '-' + value.slice(3, 6) + '-' + value.slice(6);
+            } else {
+                this.value = value.slice(0, 3) + '-' + value.slice(3, 6) + '-' + value.slice(6, 10);
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

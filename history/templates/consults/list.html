@@ -1,0 +1,224 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Consultas - System Medic{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1>
+                <i class="bi bi-clipboard-pulse"></i> Consultas Médicas
+            </h1>
+            <a href="{% url 'consult_create' %}" class="btn btn-primary">
+                <i class="bi bi-plus-circle"></i> Nueva Consulta
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Filtros -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <form method="get" class="row g-3">
+                    <div class="col-md-3">
+                        <label for="search" class="form-label">Buscar</label>
+                        <input type="text" class="form-control" name="search" placeholder="Paciente, doctor..." value="{{ request.GET.search }}">
+                    </div>
+                    <div class="col-md-2">
+                        <label for="consult_type" class="form-label">Tipo</label>
+                        <select class="form-control" name="consult_type">
+                            <option value="">Todos</option>
+                            <option value="FIRST" {% if request.GET.consult_type == 'FIRST' %}selected{% endif %}>Primera Consulta</option>
+                            <option value="FOLLOW" {% if request.GET.consult_type == 'FOLLOW' %}selected{% endif %}>Seguimiento</option>
+                            <option value="EMERGENCY" {% if request.GET.consult_type == 'EMERGENCY' %}selected{% endif %}>Emergencia</option>
+                            <option value="ROUTINE" {% if request.GET.consult_type == 'ROUTINE' %}selected{% endif %}>Rutina</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label for="date_from" class="form-label">Desde</label>
+                        <input type="date" class="form-control" name="date_from" value="{{ request.GET.date_from }}">
+                    </div>
+                    <div class="col-md-2">
+                        <label for="date_to" class="form-label">Hasta</label>
+                        <input type="date" class="form-control" name="date_to" value="{{ request.GET.date_to }}">
+                    </div>
+                    <div class="col-md-3 d-flex align-items-end">
+                        <button type="submit" class="btn btn-outline-primary me-2">
+                            <i class="bi bi-search"></i> Buscar
+                        </button>
+                        <a href="{% url 'consult_list' %}" class="btn btn-outline-secondary">
+                            <i class="bi bi-x-circle"></i> Limpiar
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Lista de consultas -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    Lista de Consultas ({{ page_obj.paginator.count }} total)
+                </h5>
+            </div>
+            <div class="card-body p-0">
+                {% if page_obj %}
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Fecha</th>
+                                    <th>Paciente</th>
+                                    <th>Doctor</th>
+                                    <th>Tipo</th>
+                                    <th>Motivo</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for consult in page_obj %}
+                                <tr>
+                                    <td>
+                                        <div>
+                                            <strong>{{ consult.date|date:"d/m/Y" }}</strong>
+                                            <br>
+                                            <small class="text-muted">{{ consult.date|date:"H:i" }}</small>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar-sm bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-2">
+                                                {{ consult.patient.name|first }}{{ consult.patient.last_name|first }}
+                                            </div>
+                                            <div>
+                                                <strong>{{ consult.patient.name }} {{ consult.patient.last_name }}</strong>
+                                                <br>
+                                                <small class="text-muted">DNI: {{ consult.patient.dni }}</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div>
+                                            <strong>{{ consult.doctor.full_name }}</strong>
+                                            <br>
+                                            <small class="text-muted">{{ consult.doctor.get_specialty_display }}</small>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-{{ consult.consult_type|lower }}">
+                                            {{ consult.get_consult_type_display }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="text-truncate d-inline-block" style="max-width: 200px;" title="{{ consult.reason }}">
+                                            {{ consult.reason }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <a href="{% url 'consult_detail' consult.pk %}" class="btn btn-sm btn-outline-primary" title="Ver detalles">
+                                                <i class="bi bi-eye"></i>
+                                            </a>
+                                            {% if user_role == 'administrator' or consult.doctor.user == user %}
+                                            <a href="{% url 'consult_edit' consult.pk %}" class="btn btn-sm btn-outline-warning" title="Editar">
+                                                <i class="bi bi-pencil"></i>
+                                            </a>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="bi bi-clipboard-pulse fs-1 text-muted"></i>
+                        <h5 class="text-muted mt-3">No se encontraron consultas</h5>
+                        <p class="text-muted">Intenta ajustar los filtros de búsqueda</p>
+                        <a href="{% url 'consult_create' %}" class="btn btn-primary">
+                            <i class="bi bi-plus"></i> Crear Primera Consulta
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Paginación -->
+{% if page_obj.has_other_pages %}
+<div class="row mt-4">
+    <div class="col-12">
+        <nav aria-label="Paginación de consultas">
+            <ul class="pagination justify-content-center">
+                {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page=1{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.consult_type %}&consult_type={{ request.GET.consult_type }}{% endif %}{% if request.GET.date_from %}&date_from={{ request.GET.date_from }}{% endif %}{% if request.GET.date_to %}&date_to={{ request.GET.date_to }}{% endif %}">
+                            <i class="bi bi-chevron-double-left"></i>
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.consult_type %}&consult_type={{ request.GET.consult_type }}{% endif %}{% if request.GET.date_from %}&date_from={{ request.GET.date_from }}{% endif %}{% if request.GET.date_to %}&date_to={{ request.GET.date_to }}{% endif %}">
+                            <i class="bi bi-chevron-left"></i>
+                        </a>
+                    </li>
+                {% endif %}
+                
+                <li class="page-item active">
+                    <span class="page-link">
+                        Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+                    </span>
+                </li>
+                
+                {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.consult_type %}&consult_type={{ request.GET.consult_type }}{% endif %}{% if request.GET.date_from %}&date_from={{ request.GET.date_from }}{% endif %}{% if request.GET.date_to %}&date_to={{ request.GET.date_to }}{% endif %}">
+                            <i class="bi bi-chevron-right"></i>
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.consult_type %}&consult_type={{ request.GET.consult_type }}{% endif %}{% if request.GET.date_from %}&date_from={{ request.GET.date_from }}{% endif %}{% if request.GET.date_to %}&date_to={{ request.GET.date_to }}{% endif %}">
+                            <i class="bi bi-chevron-double-right"></i>
+                        </a>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .avatar-sm {
+        width: 40px;
+        height: 40px;
+        font-size: 14px;
+        font-weight: bold;
+    }
+    
+    .table th {
+        border-top: none;
+        font-weight: 600;
+        color: #495057;
+    }
+    
+    .badge {
+        font-size: 0.75em;
+    }
+    
+    .badge.bg-first { background-color: #17a2b8 !important; }
+    .badge.bg-follow { background-color: #28a745 !important; }
+    .badge.bg-emergency { background-color: #dc3545 !important; }
+    .badge.bg-routine { background-color: #6c757d !important; }
+</style>
+{% endblock %}

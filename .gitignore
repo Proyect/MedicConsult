@@ -1,0 +1,104 @@
+ # Python bytecode and cache
+ __pycache__/
+ *.py[cod]
+ *$py.class
+
+ # Virtual environments
+ .venv/
+ venv/
+ ENV/
+ env/
+ .python_env/
+ .conda/
+ venv.bak/
+ env.bak/
+ virtualenv/
+ .venv*/
+
+ # Dependencies / Packaging
+ .Python
+ build/
+ develop-eggs/
+ dist/
+ downloads/
+ eggs/
+ .eggs/
+ lib/
+ lib64/
+ parts/
+ sdist/
+ var/
+ wheels/
+ share/python-wheels/
+ *.egg-info/
+ .installed.cfg
+ pip-wheel-metadata/
+ *.egg
+
+ # Installer logs
+ pip-log.txt
+ pip-delete-this-directory.txt
+
+ # Django specific
+ *.log
+ local_settings.py
+ db.sqlite3
+ *.sqlite3
+ *.sqlite3-journal
+ media/
+ staticfiles/
+ static/
+
+ # Environment and secrets
+ .env
+ .env.*
+ *.env
+ *.env.*
+ .secrets*/
+ secret_*.json
+ .python-version
+
+ # Unit test / coverage
+ htmlcov/
+ .tox/
+ .nox/
+ .coverage
+ .coverage.*
+ .cache
+ nosetests.xml
+ coverage.xml
+ *.cover
+ *.py,cover
+ .hypothesis/
+ .pytest_cache/
+ pytestdebug.log
+
+ # Type checkers
+ .mypy_cache/
+ .pyre/
+ .pytype/
+
+ # IDE/editor
+ .vscode/
+ .idea/
+ *.iml
+ *.ipr
+ *.iws
+ *.sublime-*
+
+ # OS files (Windows/macOS)
+ .DS_Store
+ Thumbs.db
+ Desktop.ini
+ $RECYCLE.BIN/
+
+ # Logs
+ logs/
+ *.log
+
+ # Celery
+ celerybeat-schedule
+
+ # Misc
+ *.swp
+ *.swo

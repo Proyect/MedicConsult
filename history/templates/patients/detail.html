@@ -1,0 +1,221 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ patient.name }} {{ patient.last_name }} - System Medic{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1>
+                <i class="bi bi-person"></i> {{ patient.name }} {{ patient.last_name }}
+            </h1>
+            <div>
+                {% if user_role == 'administrator' %}
+                <a href="{% url 'patient_edit' patient.pk %}" class="btn btn-warning">
+                    <i class="bi bi-pencil"></i> Editar
+                </a>
+                <a href="{% url 'patient_delete' patient.pk %}" class="btn btn-danger">
+                    <i class="bi bi-trash"></i> Eliminar
+                </a>
+                {% endif %}
+                <a href="{% url 'patient_list' %}" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left"></i> Volver
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Información del Paciente -->
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-person-circle"></i> Información Personal
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="text-center mb-3">
+                    <div class="avatar-lg bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center">
+                        {{ patient.name|first }}{{ patient.last_name|first }}
+                    </div>
+                </div>
+                
+                <table class="table table-borderless">
+                    <tr>
+                        <td><strong>DNI:</strong></td>
+                        <td>{{ patient.dni }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Edad:</strong></td>
+                        <td>{{ patient.age }} años</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Género:</strong></td>
+                        <td>{{ patient.get_gender_display }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Fecha de Nacimiento:</strong></td>
+                        <td>{{ patient.birth_date|date:"d/m/Y" }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Teléfono:</strong></td>
+                        <td>{{ patient.phone }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Email:</strong></td>
+                        <td>{{ patient.email }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Dirección:</strong></td>
+                        <td>{{ patient.address }}</td>
+                    </tr>
+                </table>
+                
+                {% if patient.observations %}
+                <div class="mt-3">
+                    <h6>Observaciones:</h6>
+                    <p class="text-muted">{{ patient.observations }}</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Historia Clínica -->
+        <div class="card mt-3">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-file-medical"></i> Historia Clínica
+                </h5>
+                <a href="{% url 'medical_record_edit' patient.pk %}" class="btn btn-sm btn-outline-primary">
+                    <i class="bi bi-pencil"></i> Editar
+                </a>
+            </div>
+            <div class="card-body">
+                {% if medical_record %}
+                    {% if medical_record.allergies %}
+                    <div class="mb-3">
+                        <h6 class="text-danger">Alergias:</h6>
+                        <p class="text-muted">{{ medical_record.allergies }}</p>
+                    </div>
+                    {% endif %}
+                    
+                    {% if medical_record.chronic_conditions %}
+                    <div class="mb-3">
+                        <h6 class="text-warning">Enfermedades Crónicas:</h6>
+                        <p class="text-muted">{{ medical_record.chronic_conditions }}</p>
+                    </div>
+                    {% endif %}
+                    
+                    {% if medical_record.family_history %}
+                    <div class="mb-3">
+                        <h6 class="text-info">Antecedentes Familiares:</h6>
+                        <p class="text-muted">{{ medical_record.family_history }}</p>
+                    </div>
+                    {% endif %}
+                    
+                    {% if medical_record.social_history %}
+                    <div class="mb-3">
+                        <h6 class="text-secondary">Antecedentes Sociales:</h6>
+                        <p class="text-muted">{{ medical_record.social_history }}</p>
+                    </div>
+                    {% endif %}
+                    
+                    {% if not medical_record.allergies and not medical_record.chronic_conditions and not medical_record.family_history and not medical_record.social_history %}
+                    <p class="text-muted text-center">
+                        <i class="bi bi-info-circle"></i><br>
+                        No hay información de historia clínica registrada
+                    </p>
+                    {% endif %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Consultas -->
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-clipboard-pulse"></i> Historial de Consultas
+                </h5>
+                <a href="{% url 'consult_create' %}?patient={{ patient.pk }}" class="btn btn-success btn-sm">
+                    <i class="bi bi-plus"></i> Nueva Consulta
+                </a>
+            </div>
+            <div class="card-body p-0">
+                {% if consults %}
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Fecha</th>
+                                    <th>Doctor</th>
+                                    <th>Tipo</th>
+                                    <th>Motivo</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for consult in consults %}
+                                <tr>
+                                    <td>{{ consult.date|date:"d/m/Y H:i" }}</td>
+                                    <td>{{ consult.doctor.full_name }}</td>
+                                    <td>
+                                        <span class="badge bg-{{ consult.consult_type|lower }}">
+                                            {{ consult.get_consult_type_display }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="text-truncate d-inline-block" style="max-width: 200px;" title="{{ consult.reason }}">
+                                            {{ consult.reason }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'consult_detail' consult.pk %}" class="btn btn-sm btn-outline-primary">
+                                            <i class="bi bi-eye"></i> Ver
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="bi bi-clipboard-pulse fs-1 text-muted"></i>
+                        <h5 class="text-muted mt-3">No hay consultas registradas</h5>
+                        <p class="text-muted">Este paciente aún no tiene consultas en el sistema</p>
+                        <a href="{% url 'consult_create' %}?patient={{ patient.pk }}" class="btn btn-primary">
+                            <i class="bi bi-plus"></i> Crear Primera Consulta
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .avatar-lg {
+        width: 80px;
+        height: 80px;
+        font-size: 32px;
+        font-weight: bold;
+    }
+    
+    .table th {
+        border-top: none;
+        font-weight: 600;
+        color: #495057;
+    }
+    
+    .badge {
+        font-size: 0.75em;
+    }
+</style>
+{% endblock %}

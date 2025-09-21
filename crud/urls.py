@@ -15,23 +15,34 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, include
+from django.contrib.auth import views as auth_views
 from history import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path("", views.home),
-    path("/update_consult/", views.put_consult),
-    path("/detail_consult/", views.get_consult),
-    path("/delete_consult/", views.del_consult),
     
-    path("/list_dr/", views.list_dr),
-    path("/update_dr/",views.put_dr),
-    path("/consult_dr/",views.get_consult),
-    path("/delete_dr/",views.del_dr),
+    # Autenticación
+    path('login/', views.login_view, name='login'),
+    path('logout/', views.logout_view, name='logout'),
     
-    path("/list_person/", views.list_person),
-    path("/update_person/", views.put_person),
-    path("/consult_person/", views.get_person),
-    path("/delete_person/", views.del_person)
+    # Dashboard
+    path('', views.dashboard, name='dashboard'),
+    
+    # Pacientes
+    path('patients/', views.patient_list, name='patient_list'),
+    path('patients/<int:pk>/', views.patient_detail, name='patient_detail'),
+    path('patients/create/', views.patient_create, name='patient_create'),
+    path('patients/<int:pk>/edit/', views.patient_edit, name='patient_edit'),
+    path('patients/<int:pk>/delete/', views.patient_delete, name='patient_delete'),
+    path('patients/<int:patient_pk>/medical-record/', views.medical_record_edit, name='medical_record_edit'),
+    
+    # Consultas
+    path('consults/', views.consult_list, name='consult_list'),
+    path('consults/<int:pk>/', views.consult_detail, name='consult_detail'),
+    path('consults/create/', views.consult_create, name='consult_create'),
+    
+    # Doctores
+    path('doctors/', views.doctor_list, name='doctor_list'),
+    path('doctors/create/', views.doctor_create, name='doctor_create'),
 ]

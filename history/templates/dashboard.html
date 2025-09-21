@@ -1,0 +1,206 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Dashboard - System Medic{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-4">
+            <i class="bi bi-speedometer2"></i> Dashboard
+            <small class="text-muted">Bienvenido, {{ user.get_full_name|default:user.username }}</small>
+        </h1>
+    </div>
+</div>
+
+<!-- Estadísticas Generales -->
+<div class="row mb-4">
+    <div class="col-md-3 mb-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="card-title">{{ total_patients }}</h4>
+                        <p class="card-text">Pacientes Activos</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="bi bi-people fs-1"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="card-title">{{ total_consults }}</h4>
+                        <p class="card-text">Total Consultas</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="bi bi-clipboard-pulse fs-1"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+        <div class="card bg-info text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="card-title">{{ total_doctors }}</h4>
+                        <p class="card-text">Doctores Activos</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="bi bi-person-badge fs-1"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    {% if user_role == 'doctor' %}
+    <div class="col-md-3 mb-3">
+        <div class="card bg-warning text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="card-title">{{ my_consults }}</h4>
+                        <p class="card-text">Mis Consultas</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="bi bi-person-check fs-1"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Acciones Rápidas -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-lightning"></i> Acciones Rápidas
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 mb-2">
+                        <a href="{% url 'patient_create' %}" class="btn btn-primary w-100">
+                            <i class="bi bi-person-plus"></i> Nuevo Paciente
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <a href="{% url 'consult_create' %}" class="btn btn-success w-100">
+                            <i class="bi bi-plus-circle"></i> Nueva Consulta
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <a href="{% url 'patient_list' %}" class="btn btn-info w-100">
+                            <i class="bi bi-search"></i> Buscar Paciente
+                        </a>
+                    </div>
+                    {% if user_role == 'administrator' %}
+                    <div class="col-md-3 mb-2">
+                        <a href="{% url 'doctor_create' %}" class="btn btn-warning w-100">
+                            <i class="bi bi-person-plus-fill"></i> Nuevo Doctor
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Consultas Recientes (solo para doctores) -->
+{% if user_role == 'doctor' and recent_consults %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-clock-history"></i> Mis Consultas Recientes
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Fecha</th>
+                                <th>Paciente</th>
+                                <th>Tipo</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for consult in recent_consults %}
+                            <tr>
+                                <td>{{ consult.date|date:"d/m/Y H:i" }}</td>
+                                <td>{{ consult.patient.name }} {{ consult.patient.last_name }}</td>
+                                <td>
+                                    <span class="badge bg-{{ consult.consult_type|lower }}">
+                                        {{ consult.get_consult_type_display }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <a href="{% url 'consult_detail' consult.pk %}" class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-eye"></i> Ver
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="text-center">
+                    <a href="{% url 'consult_list' %}" class="btn btn-primary">
+                        Ver Todas las Consultas
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Información del Sistema -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-info-circle"></i> Información del Sistema
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Tu Rol: <span class="badge bg-primary">{{ user_role|title }}</span></h6>
+                        <p class="text-muted">
+                            {% if user_role == 'administrator' %}
+                                Tienes acceso completo al sistema y puedes gestionar todos los pacientes, doctores y consultas.
+                            {% elif user_role == 'doctor' %}
+                                Puedes ver y gestionar solo los pacientes con los que has tenido consultas.
+                            {% endif %}
+                        </p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Última Conexión</h6>
+                        <p class="text-muted">{{ user.last_login|date:"d/m/Y H:i"|default:"Primera vez" }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
