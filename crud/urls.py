@@ -17,7 +17,10 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from django.contrib.auth import views as auth_views
+from django.conf import settings
+from django.conf.urls.static import static
 from history import views
+from history import report_views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -28,6 +31,7 @@ urlpatterns = [
     
     # Dashboard
     path('', views.dashboard, name='dashboard'),
+    path('api/dashboard-data/', views.dashboard_data_api, name='dashboard_data_api'),
     
     # Pacientes
     path('patients/', views.patient_list, name='patient_list'),
@@ -45,4 +49,20 @@ urlpatterns = [
     # Doctores
     path('doctors/', views.doctor_list, name='doctor_list'),
     path('doctors/create/', views.doctor_create, name='doctor_create'),
+    
+    # Reportes
+    path('reports/', report_views.reports_dashboard, name='reports_dashboard'),
+    path('reports/patients/', report_views.generate_patients_report, name='generate_patients_report'),
+    path('reports/consults/', report_views.generate_consults_report, name='generate_consults_report'),
+    path('reports/statistics/', report_views.generate_statistics_report, name='generate_statistics_report'),
+    path('reports/list/', report_views.reports_list, name='reports_list'),
+    path('reports/<int:report_id>/delete/', report_views.delete_report, name='delete_report'),
+    
+    # API
+    path('api/dashboard-data/', report_views.dashboard_data_api, name='dashboard_data_api'),
 ]
+
+# Servir archivos de medios en desarrollo
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

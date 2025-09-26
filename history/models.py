@@ -2,6 +2,38 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.core.validators import RegexValidator
 from django.utils import timezone
+from django.contrib.auth.models import AbstractUser
+
+class UserProfile(models.Model):
+    """Perfil extendido de usuario para manejar roles"""
+    ROLE_CHOICES = [
+        ('ADMIN', 'Administrador'),
+        ('DOCTOR', 'Médico'),
+        ('PATIENT', 'Paciente'),
+        ('RECEPTION', 'Recepción'),
+        ('NURSE', 'Enfermera'),
+    ]
+    
+    user = models.OneToOneField(User, on_delete=models.CASCADE, verbose_name="Usuario")
+    role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='PATIENT', verbose_name="Rol")
+    phone = models.CharField(
+        max_length=15, 
+        validators=[RegexValidator(
+            regex=r'^\+?1?\d{9,15}$',
+            message='Formato de teléfono inválido'
+        )],
+        verbose_name="Teléfono"
+    )
+    is_active = models.BooleanField(default=True, verbose_name="Activo")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Perfil de Usuario"
+        verbose_name_plural = "Perfiles de Usuario"
+
+    def __str__(self):
+        return f"{self.user.get_full_name()} - {self.get_role_display()}"
 
 class Person(models.Model):
     GENDER_CHOICES = [
@@ -169,4 +201,60 @@ class MedicalRecord(models.Model):
 
     def __str__(self) -> str:
         return f"Historia Clínica de {self.patient}"
+
+class Report(models.Model):
+    """Modelo para almacenar reportes generados"""
+    REPORT_TYPES = [
+        ('PATIENTS', 'Reporte de Pacientes'),
+        ('CONSULTS', 'Reporte de Consultas'),
+        ('DOCTORS', 'Reporte de Doctores'),
+        ('STATISTICS', 'Estadísticas Generales'),
+        ('CUSTOM', 'Reporte Personalizado'),
+    ]
+    
+    id = models.AutoField(primary_key=True)
+    name = models.CharField(max_length=200, verbose_name="Nombre del Reporte")
+    report_type = models.CharField(max_length=20, choices=REPORT_TYPES, verbose_name="Tipo de Reporte")
+    description = models.TextField(blank=True, null=True, verbose_name="Descripción")
+    filters = models.JSONField(default=dict, verbose_name="Filtros Aplicados")
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="Creado por")
+    created_at = models.DateTimeField(auto_now_add=True)
+    file_path = models.CharField(max_length=500, blank=True, null=True, verbose_name="Ruta del Archivo")
+    
+    class Meta:
+        verbose_name = "Reporte"
+        verbose_name_plural = "Reportes"
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.name} - {self.get_report_type_display()}"
+
+class AuditLog(models.Model):
+    """Log de auditoría para rastrear cambios"""
+    ACTION_CHOICES = [
+        ('CREATE', 'Crear'),
+        ('UPDATE', 'Actualizar'),
+        ('DELETE', 'Eliminar'),
+        ('VIEW', 'Ver'),
+        ('LOGIN', 'Iniciar Sesión'),
+        ('LOGOUT', 'Cerrar Sesión'),
+    ]
+    
+    id = models.AutoField(primary_key=True)
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, verbose_name="Usuario")
+    action = models.CharField(max_length=10, choices=ACTION_CHOICES, verbose_name="Acción")
+    model_name = models.CharField(max_length=100, verbose_name="Modelo")
+    object_id = models.CharField(max_length=100, blank=True, null=True, verbose_name="ID del Objeto")
+    description = models.TextField(verbose_name="Descripción")
+    ip_address = models.GenericIPAddressField(blank=True, null=True, verbose_name="Dirección IP")
+    user_agent = models.TextField(blank=True, null=True, verbose_name="User Agent")
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        verbose_name = "Log de Auditoría"
+        verbose_name_plural = "Logs de Auditoría"
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.user} - {self.get_action_display()} - {self.model_name} - {self.created_at}"
     

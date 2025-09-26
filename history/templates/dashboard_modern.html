@@ -1,0 +1,327 @@
+{% extends 'base_modern.html' %}
+{% load static %}
+
+{% block title %}Dashboard - MedicConsult{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Statistics Cards -->
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="stat-card">
+            <div class="d-flex justify-content-between">
+                <div>
+                    <div class="stat-number">{{ total_patients }}</div>
+                    <div class="stat-label">Pacientes Activos</div>
+                </div>
+                <div class="stat-icon">
+                    <i class="bi bi-people"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="stat-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+            <div class="d-flex justify-content-between">
+                <div>
+                    <div class="stat-number">{{ total_doctors }}</div>
+                    <div class="stat-label">Doctores Activos</div>
+                </div>
+                <div class="stat-icon">
+                    <i class="bi bi-person-badge"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="stat-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+            <div class="d-flex justify-content-between">
+                <div>
+                    <div class="stat-number">{{ total_consults }}</div>
+                    <div class="stat-label">Total Consultas</div>
+                </div>
+                <div class="stat-icon">
+                    <i class="bi bi-clipboard-pulse"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="stat-card" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">
+            <div class="d-flex justify-content-between">
+                <div>
+                    <div class="stat-number">{{ consults_this_month }}</div>
+                    <div class="stat-label">Consultas este Mes</div>
+                </div>
+                <div class="stat-icon">
+                    <i class="bi bi-calendar-check"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Charts Row -->
+    <div class="col-lg-8 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-graph-up"></i> Consultas por Tipo</h5>
+            </div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="consultsChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-pie-chart"></i> Pacientes por Género</h5>
+            </div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="genderChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Recent Consults -->
+    <div class="col-lg-8 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-clock-history"></i> Consultas Recientes</h5>
+            </div>
+            <div class="card-body">
+                {% if recent_consults %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Fecha</th>
+                                    <th>Paciente</th>
+                                    <th>Doctor</th>
+                                    <th>Tipo</th>
+                                    <th>Estado</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for consult in recent_consults %}
+                                <tr>
+                                    <td>{{ consult.date|date:"d/m/Y H:i" }}</td>
+                                    <td>{{ consult.patient.name }} {{ consult.patient.last_name }}</td>
+                                    <td>Dr. {{ consult.doctor.full_name }}</td>
+                                    <td>
+                                        <span class="badge bg-primary">{{ consult.get_consult_type_display }}</span>
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'consult_detail' consult.pk %}" class="btn btn-sm btn-outline-primary">
+                                            Ver Detalle
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="bi bi-inbox display-1 text-muted"></i>
+                        <p class="text-muted">No hay consultas recientes</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Quick Actions -->
+    <div class="col-lg-4 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-lightning"></i> Acciones Rápidas</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    {% if user_role == 'administrator' or user_role == 'doctor' %}
+                    <a href="{% url 'patient_create' %}" class="btn btn-primary">
+                        <i class="bi bi-person-plus"></i> Nuevo Paciente
+                    </a>
+                    <a href="{% url 'consult_create' %}" class="btn btn-success">
+                        <i class="bi bi-clipboard-plus"></i> Nueva Consulta
+                    </a>
+                    {% endif %}
+                    
+                    {% if user_role == 'administrator' %}
+                    <a href="{% url 'doctor_create' %}" class="btn btn-info">
+                        <i class="bi bi-person-badge-plus"></i> Nuevo Doctor
+                    </a>
+                    <a href="{% url 'reports_dashboard' %}" class="btn btn-warning">
+                        <i class="bi bi-graph-up"></i> Generar Reportes
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if user_role == 'doctor' and my_consults %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-person-check"></i> Mis Consultas</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="stat-card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                            <div class="text-center">
+                                <div class="stat-number">{{ my_consults }}</div>
+                                <div class="stat-label">Total de Mis Consultas</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="stat-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                            <div class="text-center">
+                                <div class="stat-number">{{ my_recent_consults|length }}</div>
+                                <div class="stat-label">Consultas Recientes</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Consultas por tipo - Bar Chart
+    const consultsCtx = document.getElementById('consultsChart').getContext('2d');
+    const consultsData = {{ consults_by_type|safe }};
+    
+    const consultsLabels = consultsData.map(item => {
+        const types = {
+            'FIRST': 'Primera Consulta',
+            'FOLLOW': 'Seguimiento',
+            'EMERGENCY': 'Emergencia',
+            'ROUTINE': 'Rutina'
+        };
+        return types[item.consult_type] || item.consult_type;
+    });
+    
+    const consultsCounts = consultsData.map(item => item.count);
+    
+    new Chart(consultsCtx, {
+        type: 'bar',
+        data: {
+            labels: consultsLabels,
+            datasets: [{
+                label: 'Consultas',
+                data: consultsCounts,
+                backgroundColor: [
+                    'rgba(52, 152, 219, 0.8)',
+                    'rgba(46, 204, 113, 0.8)',
+                    'rgba(231, 76, 60, 0.8)',
+                    'rgba(241, 196, 15, 0.8)'
+                ],
+                borderColor: [
+                    'rgba(52, 152, 219, 1)',
+                    'rgba(46, 204, 113, 1)',
+                    'rgba(231, 76, 60, 1)',
+                    'rgba(241, 196, 15, 1)'
+                ],
+                borderWidth: 2,
+                borderRadius: 8
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        color: 'rgba(0,0,0,0.1)'
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
+                    }
+                }
+            }
+        }
+    });
+    
+    // Pacientes por género - Doughnut Chart
+    const genderCtx = document.getElementById('genderChart').getContext('2d');
+    const genderData = {{ patients_by_gender|safe }};
+    
+    const genderLabels = genderData.map(item => {
+        const genders = {
+            'M': 'Masculino',
+            'F': 'Femenino',
+            'O': 'Otro'
+        };
+        return genders[item.gender] || item.gender;
+    });
+    
+    const genderCounts = genderData.map(item => item.count);
+    
+    new Chart(genderCtx, {
+        type: 'doughnut',
+        data: {
+            labels: genderLabels,
+            datasets: [{
+                data: genderCounts,
+                backgroundColor: [
+                    'rgba(52, 152, 219, 0.8)',
+                    'rgba(231, 76, 60, 0.8)',
+                    'rgba(46, 204, 113, 0.8)'
+                ],
+                borderColor: [
+                    'rgba(52, 152, 219, 1)',
+                    'rgba(231, 76, 60, 1)',
+                    'rgba(46, 204, 113, 1)'
+                ],
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        padding: 20,
+                        usePointStyle: true
+                    }
+                }
+            }
+        }
+    });
+});
+</script>
+{% endblock %}
+

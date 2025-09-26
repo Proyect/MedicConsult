@@ -58,15 +58,26 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Animación de carga para botones
+    // Animación de carga para botones (solo para formularios que no sean login)
     var submitButtons = document.querySelectorAll('button[type="submit"]');
     submitButtons.forEach(function(button) {
-        button.addEventListener('click', function() {
-            if (this.form && this.form.checkValidity()) {
-                this.innerHTML = '<span class="loading"></span> Procesando...';
-                this.disabled = true;
-            }
-        });
+        // Solo aplicar animación si NO es el formulario de login
+        if (!button.closest('form').action.includes('login')) {
+            button.addEventListener('click', function() {
+                if (this.form && this.form.checkValidity()) {
+                    // Guardar el texto original
+                    var originalText = this.innerHTML;
+                    this.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Procesando...';
+                    this.disabled = true;
+                    
+                    // Restaurar el botón después de 10 segundos como fallback
+                    setTimeout(function() {
+                        button.innerHTML = originalText;
+                        button.disabled = false;
+                    }, 10000);
+                }
+            });
+        }
     });
 
     // Formateo automático de DNI

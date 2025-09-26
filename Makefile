@@ -1,9 +1,9 @@
-# System Medic - Comandos útiles
+# MedicConsult - Comandos útiles
 
-.PHONY: help install dev prod test clean migrate superuser
+.PHONY: help install dev prod test clean migrate superuser deploy start stop restart status logs backup restore cleanup
 
 help: ## Mostrar ayuda
-	@echo "System Medic - Comandos disponibles:"
+	@echo "MedicConsult - Comandos disponibles:"
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
 
 install: ## Instalar dependencias
@@ -131,3 +131,59 @@ status: ## Ver estado del sistema
 	@echo "Base de datos: $(shell python manage.py dbshell -c 'SELECT sqlite_version();' 2>/dev/null || echo 'PostgreSQL')"
 	@echo "Archivos estáticos: $(shell ls -la static/ | wc -l) archivos"
 	@echo "Plantillas: $(shell find templates/ -name '*.html' | wc -l) archivos"
+
+# Comandos de despliegue
+deploy: ## Desplegar aplicación completa
+	@echo "Desplegando MedicConsult..."
+	@chmod +x deploy.sh
+	./deploy.sh production deploy
+
+start: ## Iniciar servicios Docker
+	@echo "Iniciando servicios..."
+	docker-compose -f docker-compose.yml --env-file production.env up -d
+	@echo "✅ Servicios iniciados"
+
+stop: ## Detener servicios Docker
+	@echo "Deteniendo servicios..."
+	docker-compose -f docker-compose.yml --env-file production.env down
+	@echo "✅ Servicios detenidos"
+
+restart: ## Reiniciar servicios Docker
+	@echo "Reiniciando servicios..."
+	docker-compose -f docker-compose.yml --env-file production.env restart
+	@echo "✅ Servicios reiniciados"
+
+logs: ## Mostrar logs de servicios
+	@echo "Mostrando logs..."
+	docker-compose -f docker-compose.yml --env-file production.env logs -f
+
+backup: ## Crear backup de base de datos
+	@echo "Creando backup de base de datos..."
+	@mkdir -p backups
+	docker-compose -f docker-compose.yml --env-file production.env exec -T db pg_dump -U medic_user medic_db > backups/medicconsult_$(shell date +%Y%m%d_%H%M%S).sql
+	@echo "✅ Backup creado"
+
+restore: ## Restaurar base de datos (especificar archivo con FILE=backups/archivo.sql)
+	@echo "Restaurando base de datos..."
+	@if [ -z "$(FILE)" ]; then echo "❌ Especifica el archivo: make restore FILE=backups/archivo.sql"; exit 1; fi
+	docker-compose -f docker-compose.yml --env-file production.env exec -T db psql -U medic_user -d medic_db < $(FILE)
+	@echo "✅ Base de datos restaurada"
+
+cleanup: ## Limpiar recursos Docker no utilizados
+	@echo "Limpiando recursos no utilizados..."
+	docker system prune -f
+	docker volume prune -f
+	@echo "✅ Limpieza completada"
+
+# Comandos de salud
+health: ## Verificar salud de la aplicación
+	@echo "Verificando salud de la aplicación..."
+	@curl -f http://localhost/health || echo "❌ Aplicación no disponible"
+	@curl -f http://localhost/ || echo "❌ Aplicación no responde"
+
+# Comandos de actualización
+update: ## Actualizar dependencias
+	@echo "Actualizando dependencias..."
+	pip install --upgrade pip
+	pip install -r requirements.txt --upgrade
+	@echo "✅ Dependencias actualizadas"
